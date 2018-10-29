@@ -1,0 +1,74 @@
+<html>
+    <head>
+        <title>Timetable</title>
+
+        <link rel="icon" type="image/png" href="resources/favicon.png" />
+
+        <link rel="stylesheet" href="resources/style.css">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="parser.js"></script>
+    </head>
+    <body>
+
+        <div id="left">
+            <form>
+                Week number: <input id="week_number" type="number" value="1" step="1">
+            </form>
+
+            <form enctype="multipart/form-data">
+                Upload timetable csv: <input id="csv" type="file" accept="text/csv" name="files[]" size="30">
+            </form>
+
+            <form id="group_info_form">
+                Add module information: 
+                <div style="display: none;">
+                    Module name: <input class="group_info" type="text">
+                    Group number: <input class="group_info" type="text" value="00">
+                    <button onclick="delete_group_info_div(this)">Delete</button>
+                </div>
+            </form>
+
+            <button onclick="addAdditionalGroup()">Add additional group</button>
+            <button onclick="getGroupings()">Save grouping changes</button>
+
+            <br><br><button onclick="toggleShowingHelp()">Toggle Help</button>
+            <div id="help">
+                <br><br><br><br><br><br>
+                1. Visit <a href="https://timetables.plymouth.ac.uk/">https://timetables.plymouth.ac.uk/</a>
+                <br><br>
+                2. On the righthand side, click the download icon and select CSV from the dropdown options.
+                <br><br>
+                <img src="resources/help_1.png">
+                <br><br>
+                3. Select the following options and download the CSV file to your computer.
+                <br><br>
+                <img src="resources/help_2.png">
+                <br><br>
+                4. Click the Choose File button above and select the CSV file.
+                <br><br>
+                5. Fill out your module information, entering the module name in the lefthand text box and your group number in the righthand box.
+                <br><br>
+                6. If you want to e.g.: attend all events with the word "Lecture" in the name, then enter that word in the lefthand box and leave the number in the righthand box as 00.
+                <br><br>
+                7. Once done, click Save Grouping Changes to save and update your timetable! Change the week number in the top left corner to view different weeks.
+                <br>
+            </div>
+        </div>
+
+        <div id="right">
+            <table id="container">
+                <tr>
+                    <td>
+                        <p id="week_header"></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td> 
+                        <table id="timetable" cellspacing="0" cellpadding="10"></table>
+                    </td>
+                </tr>
+            </table>
+        </div> 
+    </body>
+</html>

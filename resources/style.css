@@ -1,0 +1,21 @@
+td, table {
+    align-content: center;
+}
+
+#timetable {
+    border:1px solid #ccc;
+}
+#container {
+    width: 800px;
+}
+
+#left {
+    margin: 20px;
+    position: absolute;
+    left: 0;
+}
+#right {
+    margin: 20px;
+    position: absolute;
+    right: 0;
+}
