@@ -33,3 +33,6 @@ _e.g.:_
 6. If you want to e.g.: attend all events with the word "Lecture" in the name, then enter that word in the lefthand box and leave the number in the righthand box as 00.
 
 7. Once done, click Save Grouping Changes to save and update your timetable! Change the week number in the top left corner to view different weeks.
+
+---
+[Calendar icon](https://game-icons.net/delapouite/originals/calendar.html) by [Delapouite](https://delapouite.com/) under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
