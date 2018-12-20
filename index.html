@@ -1,74 +1,123 @@
+<!DOCTYPE html>
 <html>
     <head>
-        <title>Timetable</title>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Schedules</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <link rel="icon" type="image/png" href="resources/favicon.png" />
+        <link rel="icon" type="image/png" href="public/images/favicon.png" />
 
-        <link rel="stylesheet" href="resources/style.css">
+        <link rel="stylesheet" 
+			  href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" 
+			  integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" 
+              crossorigin="anonymous" />
 
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="parser.js"></script>
+        <link rel="stylesheet" type="text/css" media="screen" href="style.css" />
+
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+                integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+                crossorigin="anonymous"></script>
+
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+                integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" 
+                crossorigin="anonymous"></script>
+
+        <script src="schedule/class.js"></script>
+        
     </head>
+
     <body>
+        <div class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
 
-        <div id="left">
-            <form>
-                Week number: <input id="week_number" type="number" value="1" step="1">
-            </form>
+                <form enctype="multipart/form-data">
+                    Upload timetable csv: <input id="csv" type="file" accept="text/csv" name="files[]" size="30">
+                </form>
 
-            <form enctype="multipart/form-data">
-                Upload timetable csv: <input id="csv" type="file" accept="text/csv" name="files[]" size="30">
-            </form>
+                <form id="group_info_form">
+                    Add module information: 
+                    <div style="display: none;">
+                        Module name: <input class="group_info" type="text">
+                        Group number: <input class="group_info" type="text" value="00">
+                        <button onclick="delete_group_info_div(this)">Delete</button>
+                    </div>
+                </form>
 
-            <form id="group_info_form">
-                Add module information: 
-                <div style="display: none;">
-                    Module name: <input class="group_info" type="text">
-                    Group number: <input class="group_info" type="text" value="00">
-                    <button onclick="delete_group_info_div(this)">Delete</button>
-                </div>
-            </form>
-
-            <button onclick="addAdditionalGroup()">Add additional group</button>
-            <button onclick="getGroupings()">Save grouping changes</button>
-
-            <br><br><button onclick="toggleShowingHelp()">Toggle Help</button>
-            <div id="help">
-                <br><br><br><br><br><br>
-                1. Visit <a href="https://timetables.plymouth.ac.uk/">https://timetables.plymouth.ac.uk/</a>
-                <br><br>
-                2. On the righthand side, click the download icon and select CSV from the dropdown options.
-                <br><br>
-                <img src="resources/help_1.png">
-                <br><br>
-                3. Select the following options and download the CSV file to your computer.
-                <br><br>
-                <img src="resources/help_2.png">
-                <br><br>
-                4. Click the Choose File button above and select the CSV file.
-                <br><br>
-                5. Fill out your module information, entering the module name in the lefthand text box and your group number in the righthand box.
-                <br><br>
-                6. If you want to e.g.: attend all events with the word "Lecture" in the name, then enter that word in the lefthand box and leave the number in the righthand box as 00.
-                <br><br>
-                7. Once done, click Save Grouping Changes to save and update your timetable! Change the week number in the top left corner to view different weeks.
-                <br>
+                <button onclick="addAdditionalGroup()">Add additional group</button>
+                <button onclick="getGroupings()">Save grouping changes</button>
             </div>
         </div>
 
-        <div id="right">
-            <table id="container">
-                <tr>
-                    <td>
-                        <p id="week_header"></p>
-                    </td>
-                </tr>
-                <tr>
-                    <td> 
-                        <table id="timetable" cellspacing="0" cellpadding="10"></table>
-                    </td>
-                </tr>
+        <div class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+
+                <h4 id="event-name"></h4>
+
+                <div>
+                    <p id="event-date"></p>
+                    <p id="event-time"></p>
+                </div>
+                
+                <p id="event-lecturer"></p>
+                <p id="event-location"></p>
+            </div>
+        </div>
+
+        <header>
+            <button id="modal-button">Options</button>
+
+            <form>
+                Week number: <input id="week_number" type="number" value="1" step="1" min="1">
+            </form>
+            <button onclick="updateWeekNumber(-1)">-</button>
+            <button onclick="updateWeekNumber(1)">+</button>
+
+            <p id="week_header"></p>
+        </header>
+
+        <div class="container">
+
+            <table id='calendar'>
+                <thead>
+                    <tr id="time-header">
+                        <th></th>
+                        <script>
+                            let time_header = document.getElementById("time-header");
+                            for (hour = 0; hour < 24; hour++)
+                            {
+                                let hour_element = document.createElement('th');
+                                hour_element.textContent = hour.toString() + ":00"
+                                time_header.appendChild(hour_element);
+                            }
+                        </script>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="monday">
+                        <th>Monday</th>
+                    </tr>
+                    <tr id="tuesday">
+                        <th>Tuesday</th>
+                    </tr>
+                    <tr id="wednesday">
+                        <th>Wednesday</th>
+                    </tr>
+                    <tr id="thursday">
+                        <th>Thursday</th>
+                    </tr>
+                    <tr id="friday">
+                        <th>Friday</th>
+                    </tr>
+                </tbody>
             </table>
-        </div> 
+
+        </div>
+
     </body>
+
+    <script src="schedule/parser.js"></script>
+    <script src="public/javascript/code.js"></script>
 </html>
