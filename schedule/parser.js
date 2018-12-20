@@ -23,9 +23,9 @@ $(document).ready(function() {
     }
     
     // add event listener to CSV file upload
-    document.getElementById('csv').onclick = function() {
+    document.getElementById('csv').onchange = function() {
         loadCSV();
-    }
+    };
 
     // hide help
     $("#help").hide();
