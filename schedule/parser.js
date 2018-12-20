@@ -1,15 +1,8 @@
-// template html for a table to display the timetable
-template_html = `<table width="600">\n<tr>\n<td align="center"> \n<table align="center" border="0" cellspacing="0" cellpadding="10" style="border:1px solid #ccc;">\n"++"\n</table>\n</td>\n</tr>\n</table>\n`;
-
-// template html for a table entry
-template_event = "<tr> <td>{day}</td> <td>{name}</td> <td>{start_time}</td> <td>{end_time}</td> <td>{teacher}</td> <td>{location}</td> </tr>";
-
 // declare globals
 var groupings = [];
 var compulsory = [];
 var week_list = [];
 var week_number = 0;
-var toggle_help = 0;
 
 $(document).ready(function() {
     // get the current week number
@@ -22,14 +15,17 @@ $(document).ready(function() {
     week_number = Math.abs(Math.round(diff));
 
     // update the input element
-    $("#week_number").val(week_number.toString());
-
+    document.getElementById('week_number').value = week_number;
 
     // add event listener to week number input change
-    document.getElementById('week_number').addEventListener('change', updateweekNumber, false);
+    document.getElementById('week_number').onclick = function() {
+        updateweekNumber();
+    }
     
     // add event listener to CSV file upload
-    document.getElementById('csv').addEventListener('change', loadCSV, false);
+    document.getElementById('csv').onclick = function() {
+        loadCSV();
+    }
 
     // hide help
     $("#help").hide();
@@ -44,16 +40,6 @@ $(document).ready(function() {
     parseWeek();
 });
 
-function toggleShowingHelp() {
-    if (toggle_help == 0) {
-        toggle_help = 1;
-        $("#help").show();
-    }
-    else {
-        toggle_help = 0;
-        $("#help").hide();
-    }
-}
 
 function updateweekNumber() {
     week_number = $("#week_number").val();
@@ -85,15 +71,22 @@ function readCSV(csv_text) {
 
     week_list = [];
     let new_week = [];
-    for (index=0; index < row_list.length; index++) {
-        let row = row_list[index];
 
-        if (row == []) {
+    for (index = 0; index < row_list.length; index++) {
+
+        let row = row_list[index].split(",");
+
+        // remove quotation marks from the string
+        for (row_index = 0; row_index < row.length; row_index++) {
+            row[row_index] = row[row_index].replace(/"/g,"");
+        }
+
+        if (row.length == 1 && row[0] == "") {
             week_list.push(new_week);
             new_week = [];
         }
         else {
-            new_week.push( row.split(",") );
+            new_week.push(row);
         }
     }
 
@@ -196,15 +189,100 @@ function parseWeek() {
         }
     }
 
-    let html_event_list = [];
+    let table_events = [[], [], [], [], []];
+    let weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+    let weekday_acronyms = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
-    for (index=0; index < matched_events.length; index++) {
-        
+    for (index=0; index < matched_events.length; index++) {    
         let event = matched_events[index];
-        let html_event = "<tr> <td>"+event[2]+"</td> <td>"+event[0]+"</td> <td>"+event[4]+"</td> <td>"+event[7]+"</td> <td>"+event[10]+event[9]+"</td> <td>"+event[11]+"</td> </tr>";;
-        html_event_list.push(html_event);        
+        let tr;
+        let td = document.createElement('td');
+
+        // get tr
+        let weekday = 0;
+        for (weekday_index = 0; weekday_index < weekdays.length; weekday_index++) {
+            if (event[2] == weekday_acronyms[weekday_index]) {
+                // keep a reference to the index
+                weekday = weekday_index;
+
+                tr = document.getElementById(weekdays[weekday_index]);
+                break;
+            }
+        }
+
+        td.innerText = event[0];
+
+        let event_span = event[8].substring(0, 2);
+        let event_index = parseInt(event[4].substring(0, 2));
+
+        td.colSpan = event_span;
+        td.rowIndex = event_index;
+
+        td.style.cssText = "padding: 1em; border-right: 1px solid #ddd; border-left: 1px solid #ddd;";
+
+        td.onclick = function() {
+            eventModal(td, event[0], event[3], event[4] + " - " + event[7], event[10] + " " + event[9], event[11]);
+        };
+
+        table_events[weekday].push(td);
     }
 
-    $("#week_header").html(week[0]);
-    $("#timetable").html( html_event_list.join("\n") );
+    for (index = 0; index < weekdays.length; index++){
+
+        let today = table_events[index];
+        let tr = document.getElementById(weekdays[index]);
+        let spanned_columns = 0;
+
+        // reset tr's td children (keep th children)
+        while (tr.getElementsByTagName("td")[0]) {
+            tr.removeChild(tr.getElementsByTagName("td")[0]);
+        }
+
+        // populate row with empty entries + actual entries
+        while (spanned_columns < 24) {
+            td = today.pop();
+
+            if (td != undefined) {
+                // add entry and record column span
+                if (spanned_columns == td.rowIndex-1) {
+                    tr.appendChild( td );
+                    spanned_columns += parseInt(td.colSpan);
+                }
+                // fill up with empty elements
+                else {
+                    tr.appendChild( document.createElement('td') );
+                    spanned_columns++;
+
+                    // and push back onto the list to check next round
+                    today.push(td);
+                }
+            }
+            // finish filling with empty elements
+            else {
+                tr.appendChild( document.createElement('td') );
+                spanned_columns++;
+            }
+        }
+    }
+
+    document.getElementById("week_header").innerText = week[0];
+}
+
+function eventModal(event, name, date, time, lecturer, location) {
+    // get written date
+    let year = date.substring(0,4);
+    let month = date.substring(5,7);
+    let day = date.substring(8,10);
+
+    let date_object = new Date(year, month-1, day);
+
+    // populate modal
+    document.getElementById("event-name").innerText = name;
+    document.getElementById("event-date").innerText = date_object.toString().replace("00:00:00 GMT+0000 (Greenwich Mean Time)", "");
+    document.getElementById("event-time").innerText = time;
+    document.getElementById("event-lecturer").innerText = "Staff: " + lecturer;
+    document.getElementById("event-location").innerText = "Location: " + location;
+
+    // display modal
+    document.getElementsByClassName('modal')[1].style.display = "block";
 }

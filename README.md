@@ -1,4 +1,4 @@
-# Schedules ![logo](resources/favicon.png)
+# Schedules ![logo](public/images/favicon.png)
 
 ### Brief
 A Plymouth University timetable parser to generate a personalised schedule determined from module group numbers.
@@ -21,10 +21,10 @@ _e.g.:_
 1. Visit [https://timetables.plymouth.ac.uk/"](https://timetables.plymouth.ac.uk/)
 
 2. On the righthand side, click the download icon and select CSV from the dropdown options.
-![selecting CSV download option](resources/help_1.png)
+![selecting CSV download option](public/images/help_1.png)
 
 3. Select the following options and download the CSV file to your computer.
-![suggested CSV options](resources/help_2.png)
+![suggested CSV options](public/images/help_2.png)
 
 4. Click the Choose File button above and select the CSV file.
 
