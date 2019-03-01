@@ -24,7 +24,13 @@ table tbody
    height: 500px;
 }
 tr {
+    height: 4em;
     overflow: scroll;
+}
+tbody tr th {
+    position: fixed;
+    line-height: 100%;
+    vertical-align: middle;
 }
 thead th {
     text-align: left;

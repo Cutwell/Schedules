@@ -72,14 +72,18 @@ function readCSV(csv_text) {
 
     for (index = 0; index < row_list.length; index++) {
 
-        let row = row_list[index].split(",");
+        // split at commas, but not commas inside double quotes
+        let row = row_list[index].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+
+        // if no matches, initialise as empty array
+        row = row || [];
 
         // remove quotation marks from the string
         for (row_index = 0; row_index < row.length; row_index++) {
             row[row_index] = row[row_index].replace(/"/g,"");
         }
 
-        if (row.length == 1 && row[0] == "") {
+        if (row.length == 0) {
             week_list.push(new_week);
             new_week = [];
         }
@@ -219,15 +223,43 @@ function parseWeek() {
         td.style.cssText = "padding: 1em; border-right: 1px solid #ddd; border-left: 1px solid #ddd;";
 
         td.onclick = function() {
-            eventModal(td, event[0], event[3], event[4] + " - " + event[7], event[10] + " " + event[9], event[11]);
+            eventModal(td, event[0], event[3], event[4] + " - " + event[7], event[9], event[10]);
         };
 
         table_events[weekday].push(td);
     }
 
+    let false_entry = document.createElement('td');
+    false_entry.rowIndex = 25;
+    let earliest_entry = false_entry;
+
+    // reset x view
+    document.getElementById("container").scrollLeft = 0;
+
+    // if x view != 0, then x axis is set to 0 by following logic
+    // hence need to reset view to 0 each execution
+    // (will sometimes still not work, but less if x is reset)
+
     for (index = 0; index < weekdays.length; index++){
 
         let today = table_events[index];
+
+        // compare function for sorting based on rowIndex
+        function compare(a, b){
+            if (a.rowIndex < b.rowIndex) {
+                return 1
+            }
+            
+            else if (b.rowIndex > a.rowIndex) {
+                return -1
+            }
+        
+            return 0;
+        }
+        
+        // sort today so events are applied in order
+        today.sort(compare);
+
         let tr = document.getElementById(weekdays[index]);
         let spanned_columns = 0;
 
@@ -241,8 +273,13 @@ function parseWeek() {
             td = today.pop();
 
             if (td != undefined) {
+
+                if (td.rowIndex < earliest_entry.rowIndex) {
+                    earliest_entry = td;
+                }
+
                 // add entry and record column span
-                if (spanned_columns == td.rowIndex-1) {
+                if (spanned_columns == td.rowIndex) {
                     tr.appendChild( td );
                     spanned_columns += parseInt(td.colSpan);
                 }
@@ -251,8 +288,8 @@ function parseWeek() {
                     tr.appendChild( document.createElement('td') );
                     spanned_columns++;
 
-                    // and push back onto the list to check next round
-                    today.push(td);
+                    // and push back onto the start of the list to check next round
+                    today.unshift(td);
                 }
             }
             // finish filling with empty elements
@@ -261,6 +298,17 @@ function parseWeek() {
                 spanned_columns++;
             }
         }
+    }
+
+    // if entry was ever overwritten (i.e.: this week has events)
+    if (earliest_entry.rowIndex < false_entry.rowIndex) {
+        let earliest_position = earliest_entry.getBoundingClientRect();
+
+        // offset to prevent headers overlapping entries immediately
+        let offset = 150; //(pixels)
+
+        // shift x view to the earliest elements x position
+        document.getElementById("container").scrollLeft = earliest_position.left - offset;
     }
 
     document.getElementById("week_header").innerText = week[0];
