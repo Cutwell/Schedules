@@ -1,5 +1,3 @@
-# Schedules ![logo](public/images/favicon.png)
-
 ### Brief
 A Plymouth University timetable parser to generate a personalised schedule determined from module group numbers.
 
